@@ -45,11 +45,23 @@ defmodule Hybertrofy.GridTest do
 
     invalid_coords = %{x: -1, y: -1, z: -1}
     center_coords = %{x: 0, y: 0, z: 0}
+    corner_coords = %{x: 0, y: 20, z: -20}
 
     assert Grid.fetch_locations_by_radius(grid, invalid_coords, 5) == []
 
     valid_loctions = Grid.fetch_locations_by_radius(grid, center_coords, 1)
 
     assert valid_loctions |> Enum.count == 7
+    assert %Location{x: 0, y: 1, z: -1} in valid_loctions
+    assert %Location{x: 1, y: 0, z: -1} in valid_loctions
+    assert %Location{x: -1, y: 1, z: 0} in valid_loctions
+    assert %Location{x: 0, y: 0, z: 0} in valid_loctions
+    assert %Location{x: 1, y: -1, z: 0} in valid_loctions
+    assert %Location{x: -1, y: 0, z: 1} in valid_loctions
+    assert %Location{x: 0, y: -1, z: 1} in valid_loctions
+
+    corner_locs = Grid.fetch_locations_by_radius(grid, corner_coords, 2)
+
+    assert corner_locs |> Enum.count == 9
   end
 end

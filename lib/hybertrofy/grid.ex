@@ -1,5 +1,4 @@
 defmodule Hybertrofy.Grid do
-  alias Hybertrofy.Grid.Location
   @moduledoc """
   Calculate and Interact with a Grid Game Board
 
@@ -17,6 +16,9 @@ defmodule Hybertrofy.Grid do
   coordinate should be %{x: 0, y: 3, z: -3} with the center having coordinates
   of %{x: 0, y: 0, z: 0}
   """
+
+  alias Hybertrofy.Grid.Location
+  import Location, only: [coords_to_hash: 1]
 
   @default_size 5
 
@@ -38,7 +40,14 @@ defmodule Hybertrofy.Grid do
   Given a grid and proper xyz coordinates returns the location
   """
   def fetch_location(%{locations: locations}, coords) do
-    locations[coords_to_tuple!(coords)]
+    Map.get(locations, coords_to_hash(coords), nil)
+  end
+
+  @doc """
+  Adds or overwrites location for the given lodging coordinates in a grid
+  """
+  def put_location(%{locations: locations}=grid, coords, location=%Location{}) do
+    %{ grid | locations: Map.put(locations, coords_to_hash(coords), location) }
   end
 
   @doc """
@@ -49,42 +58,27 @@ defmodule Hybertrofy.Grid do
     case fetch_location(grid, coords) do
       nil -> []
 
-      %Location{x: x, y: y, z: z} -> 
-        grid_coords({x,y,z}, radius)
-        |> Enum.map(fn {x,y,z} -> fetch_location(grid, %{x: x, y: y, z: z}) end)
+      location ->
+        Location.surrounding_coordinates(location, radius)
+        |> Enum.map(&fetch_location(grid, &1))
+        |> Enum.reject(&is_nil/1)
     end
   end
 
   @doc """
-  Given a grid, xyz coordinates, and data updates location in grid
+  Given a grid, xyz coordinates, and data updates location in grid.  This is
+  a quick way to pull a location and update it as you would similarly with
+  `Hybertrofy.Grid.Location.update/2`
   """
   def update_location(grid, coords, data) when is_map(data) do
-    location = fetch_location(grid, coords)
-    updated = %{ location | data: location.data |> Map.merge(data) }
-    locations = grid.locations |> Map.put(coords_to_tuple!(coords), updated)
-
-    %{ grid | locations: locations }
-  end
-
-  defp grid_coords({cx, cy, cz} \\ {0,0,0}, radius) do
-    for x <- -radius..radius, y <- max(-radius, -x-radius)..min(radius, -x+radius) do
-      {x+cx, y+cy, -x-y+cz}
-    end
+    location = fetch_location(grid, coords) |> Location.update(data)
+    grid |> put_location(coords, location)
   end
 
   defp init_locations(size) do
-    grid_coords(size)
-    |> Enum.map(fn {x,y,z}=coords -> {coords, %Location{x: x, y: y, z: z}} end)
+    Location.new
+    |> Location.surrounding_coordinates(size)
+    |> Enum.map(&{coords_to_hash(&1), Location.new(&1)})
     |> Enum.into(%{})
-  end
-
-  defp coords_to_tuple!(coords) when is_list(coords) do
-    x = Keyword.fetch!(coords, :x)
-    y = Keyword.fetch!(coords, :y)
-    z = Keyword.fetch!(coords, :z)
-    {x, y, z}
-  end
-  defp coords_to_tuple!(%{x: x, y: y, z: z}) do
-    {x, y, z}
   end
 end
