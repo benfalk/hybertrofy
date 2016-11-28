@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/benfalk/hybertrofy.svg?branch=master)](https://travis-ci.org/benfalk/hybertrofy)
+
 # Hybertrofy
 
 **TODO: Add description**
