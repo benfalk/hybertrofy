@@ -31,13 +31,16 @@ defmodule Hybertrofy.GridTest do
 
   test "you can update a location" do
     grid = Grid.create(size: 5)
-    first = Grid.update_location(grid, [x: 0, y: 0, z: 0], %{tile: "green"})
 
+    first = Grid.update_location(grid, [x: 0, y: 0, z: 0], %{tile: "green"})
     assert %Location{data: %{tile: "green"}} = first.locations[{0, 0, 0}]
 
     second = Grid.update_location(first, %{x: 0, y: 0, z: 0}, %{tile: "blue", dark: true})
-
     assert %Location{data: %{tile: "blue", dark: true}} = second.locations[{0, 0, 0}]
+
+    location = %Location{data: %{foo: "bar"}, x: 1, y: 1, z: -2}
+    third = Grid.put_location(grid, location)
+    assert location == third.locations[{1, 1, -2}]
   end
 
   test "you can get a sub-section of loctions by radius" do

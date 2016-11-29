@@ -51,6 +51,14 @@ defmodule Hybertrofy.Grid do
   end
 
   @doc """
+  Adds or overwrites location in a grid, uses the coordinates of the
+  location to determine where it belongs.
+  """
+  def put_location(grid, location=%Location{}) do
+    put_location(grid, location, location)
+  end
+
+  @doc """
   Given a grid, proper xyz coordinates, and a radius returns all locations
   from that coordinate and all that fan out with the given radius distance
   """
